@@ -433,6 +433,7 @@ class AuthController extends Controller
         return $this->loginSuccess($user);
     }
 
+
     protected function loginSuccess($user)
     {
         $account = self::queryAccount($user->phone);
