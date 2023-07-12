@@ -2,7 +2,7 @@
 
 use App\Http\Controllers\Api\V2\ShopController;
 
-Route::group(['prefix' => 'v2/auth', 'middleware' => ['app_language']], function() {
+Route::group(['prefix' => 'v2/auth', 'middleware' => ['app_language']], function () {
     Route::post('login', 'App\Http\Controllers\Api\V2\AuthController@login');
     Route::post('signup', 'App\Http\Controllers\Api\V2\AuthController@signup');
     Route::post('queryAccountDetails', 'App\Http\Controllers\Api\V2\AuthController@queryAccountDetails');
@@ -20,7 +20,7 @@ Route::group(['prefix' => 'v2/auth', 'middleware' => ['app_language']], function
     Route::post('confirm_code', 'App\Http\Controllers\Api\V2\AuthController@confirmCode');
 });
 
-Route::group(['prefix' => 'v2', 'middleware' => ['app_language']], function() {
+Route::group(['prefix' => 'v2', 'middleware' => ['app_language']], function () {
     Route::prefix('delivery-boy')->group(function () {
         Route::get('dashboard-summary/{id}', 'App\Http\Controllers\Api\V2\DeliveryBoyController@dashboard_summary')->middleware('auth:sanctum');
         Route::get('deliveries/completed/{id}', 'App\Http\Controllers\Api\V2\DeliveryBoyController@completed_delivery')->middleware('auth:sanctum');
@@ -245,7 +245,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['app_language']], function() {
     Route::get('profile/counters', 'App\Http\Controllers\Api\V2\ProfileController@counters')->middleware('auth:sanctum');
 
     Route::post('profile/update', 'App\Http\Controllers\Api\V2\ProfileController@update')->middleware('auth:sanctum');
-    
+
     Route::post('profile/update-device-token', 'App\Http\Controllers\Api\V2\ProfileController@update_device_token')->middleware('auth:sanctum');
     Route::post('profile/update-image', 'App\Http\Controllers\Api\V2\ProfileController@updateImage')->middleware('auth:sanctum');
     Route::post('profile/image-upload', 'App\Http\Controllers\Api\V2\ProfileController@imageUpload')->middleware('auth:sanctum');
@@ -265,14 +265,31 @@ Route::group(['prefix' => 'v2', 'middleware' => ['app_language']], function() {
     Route::get('addon-list', 'App\Http\Controllers\Api\V2\ConfigController@addon_list');
     //Activated social login list
     Route::get('activated-social-login', 'App\Http\Controllers\Api\V2\ConfigController@activated_social_login');
-    
+
     //Business Sttings list
     Route::post('business-settings', 'App\Http\Controllers\Api\V2\ConfigController@business_settings');
     //Pickup Point list
     Route::get('pickup-list', 'App\Http\Controllers\Api\V2\ShippingController@pickup_list');
 });
 
-Route::fallback(function() {
+Route::group(array('prefix' => '/v2'), function () {
+    // Route::post('/login', 'App\Http\Controllers\AuthController@login');
+    // Route::post('/register', 'App\Http\Controllers\AuthController@register');
+    Route::post('/queryWalletBalance', 'App\Http\Controllers\Api\V2\PaymentController@queryWalletBalance');
+    Route::post('/make-payment', 'App\Http\Controllers\Api\V2\PaymentController@makePayment');
+    Route::post('/validateAccount', 'App\Http\Controllers\Api\V2\PaymentController@validateAccount');
+    Route::post('/authorizePayment', 'App\Http\Controllers\Api\V2\PaymentController@authorizePayment');
+    Route::post('/processUtilityPayment', 'App\Http\Controllers\Api\V2\PaymentController@processUtilityPayment');
+    Route::post('/getTransactions', 'App\Http\Controllers\Api\V2\PaymentController@getTransactions');
+    Route::post('/changePin', 'App\Http\Controllers\Api\V2\AuthController@changePin');
+    Route::post('/checkStatus', 'App\Http\Controllers\Api\V2\PaymentController@checkStatus');
+    Route::post('/validateMobileMoney', 'App\Http\Controllers\Api\V2\PaymentController@validateMobileMoney');
+    Route::post('/validateBankAccount', 'App\Http\Controllers\Api\V2\PaymentController@validateBankAccount');
+    Route::post('/validatePayBillAccount', 'App\Http\Controllers\Api\V2\PaymentController@validatePayBillAccount');
+});
+
+
+Route::fallback(function () {
     return response()->json([
         'data' => [],
         'success' => false,

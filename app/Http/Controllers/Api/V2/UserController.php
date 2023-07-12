@@ -39,26 +39,25 @@ class UserController extends Controller
             'avatar_original' => "",
             'phone' => ""
         ];
-        
+
 
 
         $token = PersonalAccessToken::findToken($request->access_token);
         if (!$token) {
             return response()->json($false_response);
         }
-        
+
         $user = $token->tokenable;
 
-        
+
 
         if ($user == null) {
             return response()->json($false_response);
-
         }
 
         $authController = new AuthController();
 
-        $account = $authController->queryCitrusBalance($user->account_number);
+        $account = $authController->queryAccount($user->phone);
         if (!$account['success']) {
             return response([
                 'result' => false,
@@ -81,7 +80,6 @@ class UserController extends Controller
             'phone' => $user->phone,
             'account_number' => $user->account_number,
             'account_balance' => $user->account_balance
-    ]);
-
+        ]);
     }
 }

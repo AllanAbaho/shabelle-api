@@ -480,38 +480,6 @@ class AuthController extends Controller
         ]);
     }
 
-    public function queryCitrusBalance($accountNo)
-    {
-        try {
-            $url = BRIDGE_API . CITRUS_QUERY_BALANCE;
-            $post_data = [
-                'username' => $accountNo,
-            ];
-            $ch = curl_init($url);
-            curl_setopt($ch, CURLOPT_POST, 1);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($post_data));
-            curl_setopt($ch, CURLOPT_TIMEOUT, 0);
-            curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type:application/json', 'Authorization: Basic ' . base64_encode(BASIC_AUTH_USERNAME . ':' . BASIC_AUTH_PASSWORD)));
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-            $result = curl_exec($ch);
-            if (curl_errno($ch)) {
-                $error_msg = curl_error($ch);
-                Log::info('Query Wallet Curl Error', [$error_msg]);
-                return (['success' => false, 'message' => 'Failure at Pivot Payments, Please contact support.']);
-            }
-            curl_close($ch);
-            $result = (json_decode($result, true));
-            if ($result["status"] === "SUCCESS") {
-                return (['success' => true, 'balance' => str_replace(',', '', $result['balance'])]);
-            } else {
-                return (['success' => false, 'message' => $result['message']]);
-            }
-        } catch (Exception $e) {
-            Log::info('Wallet Check Exception Error', [$e->getMessage()]);
-            return (['success' => false, 'message' => 'Failure to check wallet account at Pivotpay, connection error please try again.']);
-        }
-    }
-
     public function queryAccount($accountNo)
     {
         try {
@@ -547,45 +515,6 @@ class AuthController extends Controller
         }
     }
 
-    public function queryAccountDetails(Request $request)
-    {
-        $accountNo = $request->username;
-        try {
-            $url = BRIDGE_API . CITRUS_QUERY_ACCOUNT;
-            $post_data = [
-                'username' => $accountNo,
-            ];
-            $ch = curl_init($url);
-            curl_setopt($ch, CURLOPT_POST, 1);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($post_data));
-            curl_setopt($ch, CURLOPT_TIMEOUT, 0);
-            curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type:application/json', 'Authorization: Basic ' . base64_encode(BASIC_AUTH_USERNAME . ':' . BASIC_AUTH_PASSWORD)));
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-            $result = curl_exec($ch);
-            if (curl_errno($ch)) {
-                $error_msg = curl_error($ch);
-                Log::info('Query Wallet Curl Error', [$error_msg]);
-                return (['success' => false, 'message' => 'Failure at Pivot Payments, Please contact support.']);
-            }
-            curl_close($ch);
-            $result = (json_decode($result, true));
-            if ($result["status"] === "SUCCESS") {
-                return ([
-                    'success' => true,
-                    'account_balance' => str_replace(',', '', $result['display_amount']),
-                    'sacco_balance' => str_replace(',', '', $result['sacco_balance']),
-                    'sacco_name' => $result['sacco_name']
-                ]);
-            } else {
-                return (['success' => false, 'message' => $result['message']]);
-            }
-        } catch (Exception $e) {
-            Log::info('Wallet Check Exception Error', [$e->getMessage()]);
-            return (['success' => false, 'message' => 'Failure to check wallet account at Pivotpay, connection error please try again.']);
-        }
-    }
-
-
     public function encryptPin($pin)
     {
         $vendorSecretKey = "CZKGZ9JO2T4OOPQOWET2";
@@ -613,6 +542,49 @@ class AuthController extends Controller
         } catch (Exception $e) {
             Log::info('Profile Update Exception Error', [$e->getMessage()]);
             return (['success' => false, 'message' => 'Failed to generate Pivotpay wallet Id, please contact support']);
+        }
+    }
+
+    public function changePin(Request $request)
+    {
+        try {
+            Log::info('Change PIN Request', [$request]);
+            $username = $request->get('username');
+            $old_pin = $request->get('old_pin');
+            $pin = $request->get('pin');
+            if (isset($username)) {
+                $url = env('SHABELLE_GATEWAY') . '/changeUserPin';
+                $post_data = [
+                    'username' => $username,
+                    'old_pin' => $this->encryptPin($old_pin),
+                    'pin' => $this->encryptPin($pin),
+                    'macAddress' => '',
+                ];
+                $ch = curl_init($url);
+                curl_setopt($ch, CURLOPT_POST, 1);
+                curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($post_data));
+                curl_setopt($ch, CURLOPT_TIMEOUT, 0);
+                curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type:application/json', 'Authorization: Basic ' . base64_encode(env('SHABELLE_GATEWAY_USERNAME') . ':' . env('SHABELLE_GATEWAY_PASSWORD'))));
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+                $result = curl_exec($ch);
+                if (curl_errno($ch)) {
+                    $error_msg = curl_error($ch);
+                    Log::info('Change PIN Curl Error.', [$error_msg]);
+                    return response(['status' => 'FAIL', 'message' => $error_msg]);
+                }
+                curl_close($ch);
+                $result = (json_decode($result, true));
+                Log::info('Change PIN Response', [$result]);
+                return response([
+                    'status' => $result['status'],
+                    'message' => $result['message'],
+                ]);
+            } else {
+                return response(['status' => 'FAIL', 'message' => 'Invalid request, some parameters were not passed in the payload. Please update your app from google play store.']);
+            }
+        } catch (Exception $e) {
+            Log::info('Change PIN Exception Error', [$e->getMessage()]);
+            return response(['status' => 'FAIL', 'message' => $e->getMessage()]);
         }
     }
 }
