@@ -333,7 +333,7 @@ class AuthController extends Controller
         // if (!$delivery_boy_condition) {
         if (!$delivery_boy_condition && !$seller_condition) {
             if (\App\Utility\PayhereUtility::create_wallet_reference($identity_matrix) == false) {
-                return response()->json(['result' => false, 'message' => 'Identity matrix error', 'user' => null]);
+                return response()->json(['status' => 'FAIL', 'message' => 'Identity matrix error', 'user' => null]);
             }
         }
 
@@ -342,14 +342,14 @@ class AuthController extends Controller
             if (Hash::check($request->pin, $user->password)) {
 
                 if ($user->email_verified_at == null) {
-                    return response()->json(['result' => false, 'message' => translate('Please verify your account'), 'user' => null]);
+                    return response()->json(['status' => 'FAIL', 'message' => translate('Please verify your account'), 'user' => null]);
                 }
                 return $this->loginSuccess($user);
             } else {
-                return response()->json(['result' => false, 'message' => translate('Invalid credentials supplied'), 'user' => null]);
+                return response()->json(['status' => 'FAIL', 'message' => translate('Invalid credentials supplied'), 'user' => null]);
             }
         } else {
-            return response()->json(['result' => false, 'message' => translate('Invalid credentials supplied'), 'user' => null]);
+            return response()->json(['status' => 'FAIL', 'message' => translate('Invalid credentials supplied'), 'user' => null]);
         }
     }
 
@@ -374,7 +374,7 @@ class AuthController extends Controller
     {
         if (!$request->provider) {
             return response()->json([
-                'result' => false,
+                'status' => 'FAIL',
                 'message' => translate('User not found'),
                 'user' => null
             ]);
@@ -398,13 +398,13 @@ class AuthController extends Controller
                 $social_user = null;
         }
         if ($social_user == null) {
-            return response()->json(['result' => false, 'message' => translate('No social provider matches'), 'user' => null]);
+            return response()->json(['status' => 'FAIL', 'message' => translate('No social provider matches'), 'user' => null]);
         }
 
         $social_user_details = $social_user->userFromToken($request->access_token);
 
         if ($social_user_details == null) {
-            return response()->json(['result' => false, 'message' => translate('No social account matches'), 'user' => null]);
+            return response()->json(['status' => 'FAIL', 'message' => translate('No social account matches'), 'user' => null]);
         }
 
         //
@@ -418,7 +418,7 @@ class AuthController extends Controller
             $existingUserByMail = User::where('email', $request->email)->first();
             if ($existingUserByMail) {
 
-                return response()->json(['result' => false, 'message' => translate('You can not login with this provider'), 'user' => null]);
+                return response()->json(['status' => 'FAIL', 'message' => translate('You can not login with this provider'), 'user' => null]);
             } else {
 
                 $user = new User([
@@ -437,10 +437,10 @@ class AuthController extends Controller
     protected function loginSuccess($user)
     {
         $account = self::queryAccount($user->phone);
-        if (!$account['success']) {
+        if ($account['status'] !== 'SUCCESS') {
             Log::info($account['message']);
             return response([
-                'result' => false,
+                'status' => 'FAIL',
                 'message' => $account['message'],
                 'user_id' => 0
             ]);
@@ -497,21 +497,18 @@ class AuthController extends Controller
             if (curl_errno($ch)) {
                 $error_msg = curl_error($ch);
                 Log::info('Query Wallet Curl Error', [$error_msg]);
-                return (['success' => false, 'message' => 'Failure at Pivot Payments, Please contact support.']);
+                return (['status' => 'FAIL', 'message' => $error_msg]);
             }
             curl_close($ch);
             $result = (json_decode($result, true));
-            if ($result["status"] === "SUCCESS") {
-                return ([
-                    'success' => true,
-                    'balance' => str_replace(',', '', $result['balance'])
-                ]);
-            } else {
-                return (['success' => false, 'message' => $result['message']]);
-            }
+            return ([
+                'status' => $result['status'],
+                'message' => $result['message'],
+                'balance' => str_replace(',', '', $result['balance'])
+            ]);
         } catch (Exception $e) {
             Log::info('Wallet Check Exception Error', [$e->getMessage()]);
-            return (['success' => false, 'message' => $e->getMessage()]);
+            return (['status' => 'FAIL', 'message' => $e->getMessage()]);
         }
     }
 
