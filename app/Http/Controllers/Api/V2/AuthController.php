@@ -501,6 +501,7 @@ class AuthController extends Controller
             }
             curl_close($ch);
             $result = (json_decode($result, true));
+            Log::info('Check account balance', [$result]);
             return ([
                 'status' => $result['status'],
                 'message' => $result['message'],

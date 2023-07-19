@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V2;
 use App\Http\Resources\V2\UserCollection;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 use Laravel\Sanctum\PersonalAccessToken;
 
@@ -66,8 +67,11 @@ class UserController extends Controller
             ]);
         }
 
-        $user->account_balance = $account['balance'];
+
+
+        $user->account_balance = (string) $account['balance'];
         $user->save();
+        Log::info('User is:', [$user->account_balance]);
 
 
         return response()->json([

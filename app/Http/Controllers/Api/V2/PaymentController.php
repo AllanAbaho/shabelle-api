@@ -559,7 +559,7 @@ class PaymentController extends Controller
                 return response([
                     'status' => $result['status'],
                     'message' => $result['message'],
-                    'walletId' => $result['wallet_id'] ?? '',
+                    'walletId' => $result['walletId'] ?? '',
                     'name' => $result['name'] ?? '',
                 ]);
             } else {
