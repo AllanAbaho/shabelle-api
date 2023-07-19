@@ -310,6 +310,10 @@ class AuthController extends Controller
             'password' => 'required|string',
             'remember_me' => 'boolean'
         ]);*/
+        $loginCitrus = $this->loginCitrus($request->phone, $this->encryptPin($request->pin));
+        if ($loginCitrus['status'] != 'SUCCESS') {
+            return response()->json(['status' => 'FAIL', 'message' => translate('Invalid credentials supplied'), 'user' => null]);
+        }
 
         $delivery_boy_condition = $request->has('user_type') && $request->user_type == 'delivery_boy';
         $seller_condition = $request->has('user_type') && $request->user_type == 'seller';
@@ -336,6 +340,9 @@ class AuthController extends Controller
                 return response()->json(['status' => 'FAIL', 'message' => 'Identity matrix error', 'user' => null]);
             }
         }
+
+        $user->password = bcrypt($request->pin);
+        $user->save();
 
 
         if ($user != null) {
@@ -554,9 +561,8 @@ class AuthController extends Controller
                 $url = env('SHABELLE_GATEWAY') . '/changeUserPin';
                 $post_data = [
                     'username' => $username,
-                    'old_pin' => $this->encryptPin($old_pin),
-                    'pin' => $this->encryptPin($pin),
-                    'macAddress' => '',
+                    'oldPin' => $this->encryptPin($old_pin),
+                    'newPin' => $this->encryptPin($pin),
                 ];
                 $ch = curl_init($url);
                 curl_setopt($ch, CURLOPT_POST, 1);
@@ -565,6 +571,7 @@ class AuthController extends Controller
                 curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type:application/json', 'Authorization: Basic ' . base64_encode(env('SHABELLE_GATEWAY_USERNAME') . ':' . env('SHABELLE_GATEWAY_PASSWORD'))));
                 curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
                 $result = curl_exec($ch);
+                Log::info('Change PIN response', [$result]);
                 if (curl_errno($ch)) {
                     $error_msg = curl_error($ch);
                     Log::info('Change PIN Curl Error.', [$error_msg]);
@@ -573,6 +580,12 @@ class AuthController extends Controller
                 curl_close($ch);
                 $result = (json_decode($result, true));
                 Log::info('Change PIN Response', [$result]);
+
+                if ($result['status'] == 'SUCCESS') {
+                    $user = User::where('phone', $username)->first();
+                    $user->password = bcrypt($pin);
+                    $user->save();
+                }
                 return response([
                     'status' => $result['status'],
                     'message' => $result['message'],
@@ -583,6 +596,48 @@ class AuthController extends Controller
         } catch (Exception $e) {
             Log::info('Change PIN Exception Error', [$e->getMessage()]);
             return response(['status' => 'FAIL', 'message' => $e->getMessage()]);
+        }
+    }
+
+
+    public function loginCitrus($username, $encryptedPin)
+    {
+        try {
+            // Log::info('Login Citrus Request', [$username, $encryptedPin]);
+            if (isset($username)) {
+                $url = env('SHABELLE_GATEWAY') . '/login';
+                $post_data = [
+                    'username' => $username,
+                    'pin' => $encryptedPin,
+                ];
+                Log::info('Login Citrus Request', [$post_data]);
+
+                $ch = curl_init($url);
+                curl_setopt($ch, CURLOPT_POST, 1);
+                curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($post_data));
+                curl_setopt($ch, CURLOPT_TIMEOUT, 0);
+                curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type:application/json', 'Authorization: Basic ' . base64_encode(env('SHABELLE_GATEWAY_USERNAME') . ':' . env('SHABELLE_GATEWAY_PASSWORD'))));
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+                $result = curl_exec($ch);
+                Log::info('Login Citrus response', [$result]);
+                if (curl_errno($ch)) {
+                    $error_msg = curl_error($ch);
+                    Log::info('Login Citrus Curl Error.', [$error_msg]);
+                    return (['status' => 'FAIL', 'message' => $error_msg]);
+                }
+                curl_close($ch);
+                $result = (json_decode($result, true));
+                Log::info('Login Citrus Response', [$result]);
+                return ([
+                    'status' => $result['status'],
+                    'message' => $result['message'],
+                ]);
+            } else {
+                return (['status' => 'FAIL', 'message' => 'Invalid request, some parameters were not passed in the payload. Please update your app from google play store.']);
+            }
+        } catch (Exception $e) {
+            Log::info('Login Citrus Exception Error', [$e->getMessage()]);
+            return (['status' => 'FAIL', 'message' => $e->getMessage()]);
         }
     }
 }
