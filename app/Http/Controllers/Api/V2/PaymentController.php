@@ -267,19 +267,21 @@ class PaymentController extends Controller
             $accountNumber = $request->get('accountNumber');
             $transactionAmount = $request->get('transactionAmount');
             $serviceName = $request->get('serviceName');
+            $serviceProvider = $request->get('serviceProvider');
             if (isset($accountNumber) && isset($transactionAmount) && isset($serviceName)) {
                 $url = env('VALIDATION_GATEWAY') . '/validatePayBillAccount';
                 $post_data = [
                     "accountNumber" => $accountNumber,
                     "transactionAmount" => $transactionAmount,
                     "accountType" => "PAYBILL",
-                    "accountCategory" => "POSTPAID",
+                    "accountCategory" => $serviceName == 'AIRTICKET' ? $serviceProvider : "POSTPAID",
                     "serviceName" => $serviceName,
                     "amount" => $transactionAmount,
                     "vendorCode" => "SHABELLE_APP",
                     "password" => "EVJ7O9V6Q6",
                     "countryCode" => "ETH"
                 ];
+                Log::info(['Request', $post_data]);
                 $ch = curl_init($url);
                 curl_setopt($ch, CURLOPT_POST, 1);
                 curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($post_data));
