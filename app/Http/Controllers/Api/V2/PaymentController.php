@@ -29,6 +29,7 @@ class PaymentController extends Controller
             $transactionAmount = $request->get('transactionAmount');
             $narration = $request->get('narration');
             $serviceName = $request->get('serviceName');
+            $transactionCharge = $request->get('transactionCharge');
             $senderName = $request->get('senderName');
             $receiverName = $request->get('receiverName');
             $airline = 'Ethiopian Airlines';
@@ -69,7 +70,7 @@ class PaymentController extends Controller
                     'walletId' => $walletId,
                     'location' => 'Ethiopia',
                     "authCode" => $accountParticulars,
-                    "tranCharge" => "300",
+                    "tranCharge" => $transactionCharge ?? '0',
                     "serviceFee" => "0",
                     "airline" => $airline,
                     'customerCategory' => $bankName

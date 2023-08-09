@@ -186,7 +186,6 @@ class PaymentTypesController
 
                 $payment_types[] = $payment_type;
             }
-
         }
 
 
@@ -212,7 +211,7 @@ class PaymentTypesController
                 $payment_type['payment_type_key'] = 'cash_on_delivery';
                 $payment_type['image'] = static_asset('assets/img/cards/wallet.png');
                 $payment_type['name'] = "Cash Payment";
-                $payment_type['title'] = "Hustla Wallet";
+                $payment_type['title'] = "Wallet";
                 $payment_type['offline_payment_id'] = 0;
                 $payment_type['details'] = "";
 
