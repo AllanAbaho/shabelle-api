@@ -573,6 +573,45 @@ class PaymentController extends Controller
             return response(['status' => 'FAIL', 'message' => $e->getMessage()]);
         }
     }
+    public function validateMerchantAccount(Request $request)
+    {
+        try {
+            Log::info('Validate Account Request', [$request]);
+            $walletId = $request->get('walletId');
+            if (isset($walletId)) {
+                $url = env('VALIDATION_GATEWAY') . '/validateMerchantAccount';
+                $post_data = [
+                    'accountNumber' => $walletId,
+                ];
+                $ch = curl_init($url);
+                curl_setopt($ch, CURLOPT_POST, 1);
+                curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($post_data));
+                curl_setopt($ch, CURLOPT_TIMEOUT, 0);
+                curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type:application/json', 'Authorization: Basic ' . base64_encode(env('SHABELLE_GATEWAY_USERNAME') . ':' . env('SHABELLE_GATEWAY_PASSWORD'))));
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+                $result = curl_exec($ch);
+                if (curl_errno($ch)) {
+                    $error_msg = curl_error($ch);
+                    Log::info('Validate Account Curl Error.', [$error_msg]);
+                    return response(['status' => 'FAIL', 'message' => $error_msg]);
+                }
+                curl_close($ch);
+                $result = (json_decode($result, true));
+                Log::info('Validate Account Response', [$result]);
+                return response([
+                    'status' => $result['status'],
+                    'message' => $result['message'],
+                    'walletId' => $result['accountNumber'] ?? '',
+                    'name' => $result['accountName'] ?? '',
+                ]);
+            } else {
+                return response(['status' => 'FAIL', 'message' => 'Invalid request, some parameters were not passed in the payload. Please update your app from google play store.']);
+            }
+        } catch (Exception $e) {
+            Log::info('Validate Account Exception Error', [$e->getMessage()]);
+            return response(['status' => 'FAIL', 'message' => $e->getMessage()]);
+        }
+    }
 
     public function queryWalletBalance(Request $request)
     {

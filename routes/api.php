@@ -278,6 +278,7 @@ Route::group(array('prefix' => '/v2'), function () {
     Route::post('/queryWalletBalance', 'App\Http\Controllers\Api\V2\PaymentController@queryWalletBalance');
     Route::post('/make-payment', 'App\Http\Controllers\Api\V2\PaymentController@makePayment');
     Route::post('/validateAccount', 'App\Http\Controllers\Api\V2\PaymentController@validateAccount');
+    Route::post('/validateMerchantAccount', 'App\Http\Controllers\Api\V2\PaymentController@validateMerchantAccount');
     Route::post('/authorizePayment', 'App\Http\Controllers\Api\V2\PaymentController@authorizePayment');
     Route::post('/processUtilityPayment', 'App\Http\Controllers\Api\V2\PaymentController@processUtilityPayment');
     Route::post('/getTransactions', 'App\Http\Controllers\Api\V2\PaymentController@getTransactions');
