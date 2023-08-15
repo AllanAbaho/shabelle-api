@@ -1,6 +1,6 @@
 <?php
 
-define('CHECK_OUT_MODE', 'HUSTLAZWALLET');
+define('CHECK_OUT_MODE', 'SHABELLEWALLET');
 define('CITRUS_LOGIN', 'login');
 define('CITRUS_QUERY_ACCOUNT', 'queryWalletBalance');
 define('CITRUS_CHANGE_PIN', 'updatePin');

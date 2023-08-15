@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\V2\ShopController;
 
 Route::group(['prefix' => 'v2/auth', 'middleware' => ['app_language']], function () {
     Route::post('login', 'App\Http\Controllers\Api\V2\AuthController@login');
+    Route::post('register', 'App\Http\Controllers\Api\V2\AuthController@register');
     Route::post('signup', 'App\Http\Controllers\Api\V2\AuthController@signup');
     Route::post('queryAccountDetails', 'App\Http\Controllers\Api\V2\AuthController@queryAccountDetails');
     Route::post('checkUserNameExists', 'App\Http\Controllers\Api\V2\AuthController@checkUserNameExists');

@@ -640,4 +640,66 @@ class AuthController extends Controller
             return (['status' => 'FAIL', 'message' => $e->getMessage()]);
         }
     }
+    public function register(Request $request)
+    {
+        try {
+            Log::info('Register Request', [$request->all()]);
+            $name = $request->name;
+            $phone = $request->phone;
+            $pin = $request->pin;
+            if (isset($name) && isset($phone) && isset($pin)) {
+                $url = env('SHABELLE_GATEWAY') . '/newUserRegistration';
+                $post_data = [
+                    'fullName' => $name,
+                    'phone' => $phone,
+                    'pin' => $this->encryptPin($pin),
+                    'email' => 'support@hcash.com',
+                    'appVersion' => '4.0.0+46',
+                    'checkoutMode' => CHECK_OUT_MODE,
+                    'osType' => 'ANDROID',
+                    'creation_date' => date('Y-m-d'),
+                    'gender' => 'Male',
+                    'rimNumber' => '49'
+                ];
+                $ch = curl_init($url);
+                curl_setopt($ch, CURLOPT_POST, 1);
+                curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($post_data));
+                curl_setopt($ch, CURLOPT_TIMEOUT, 0);
+                curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type:application/json', 'Authorization: Basic ' . base64_encode(env('SHABELLE_GATEWAY_USERNAME') . ':' . env('SHABELLE_GATEWAY_PASSWORD'))));
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+                $result = curl_exec($ch);
+                Log::info('Register response', [$result]);
+                if (curl_errno($ch)) {
+                    $error_msg = curl_error($ch);
+                    Log::info('Register Curl Error.', [$error_msg]);
+                    return (['status' => 'FAIL', 'message' => $error_msg]);
+                }
+                curl_close($ch);
+                $result = (json_decode($result, true));
+                if ($result['status'] == 'SUCCESS') {
+                    $user = new User([
+                        'name' => $name,
+                        'account_balance' => 0,
+                        'phone' => $phone,
+                        'password' => bcrypt($pin),
+                        'verification_code' => rand(100000, 999999)
+                    ]);
+
+                    $user->save();
+
+                    //create token
+                    $user->createToken('tokens')->plainTextToken;
+                }
+                return ([
+                    'status' => $result['status'],
+                    'message' => $result['message'],
+                ]);
+            } else {
+                return (['status' => 'FAIL', 'message' => 'Invalid request, some parameters were not passed in the payload. Please update your app from google play store.']);
+            }
+        } catch (Exception $e) {
+            Log::info('Regsiter Citrus Exception Error', [$e->getMessage()]);
+            return (['status' => 'FAIL', 'message' => $e->getMessage()]);
+        }
+    }
 }
