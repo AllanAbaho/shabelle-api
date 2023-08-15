@@ -682,7 +682,8 @@ class AuthController extends Controller
                         'account_balance' => 0,
                         'phone' => $phone,
                         'password' => bcrypt($pin),
-                        'verification_code' => rand(100000, 999999)
+                        'verification_code' => rand(100000, 999999),
+                        'email_verified_at' => Carbon::now()
                     ]);
 
                     $user->save();
