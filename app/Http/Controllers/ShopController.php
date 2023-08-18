@@ -10,6 +10,7 @@ use Auth;
 use Hash;
 use App\Notifications\EmailVerificationNotification;
 use Exception;
+use Illuminate\Support\Facades\Log;
 
 class ShopController extends Controller
 {
@@ -111,6 +112,7 @@ class ShopController extends Controller
                 } else {
                     $shop->delete();
                     $user->delete();
+                    Log::info([$result['message']]);
                     flash(translate($result['message']))->error();
                     return back();
                 }
