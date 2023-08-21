@@ -223,7 +223,7 @@ class PaymentController extends Controller
                     'transactionAmount' => $transactionAmount,
                     'bank' => $bank,
                     'accountType' => 'BANK',
-                    'accountCategory' => 'INTERNAL',
+                    'accountCategory' => $bank == 'Shabelle Bank' ? 'INTERNAL' : 'EXTERNAL',
                     'vendorCode' => 'SHABELLE_APP',
                     'password' => 'EVJ7O9V6Q6',
                     'countryCode' => 'ETH'
