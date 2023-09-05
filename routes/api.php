@@ -4,8 +4,8 @@ use App\Http\Controllers\Api\V2\ShopController;
 
 Route::group(['prefix' => 'v2/auth', 'middleware' => ['app_language']], function () {
     Route::post('login', 'App\Http\Controllers\Api\V2\AuthController@login');
+    Route::post('citrusEncryption', 'App\Http\Controllers\Api\V2\AuthController@citrusEncryption');
     Route::post('register', 'App\Http\Controllers\Api\V2\AuthController@register');
-    Route::post('signup', 'App\Http\Controllers\Api\V2\AuthController@signup');
     Route::post('queryAccountDetails', 'App\Http\Controllers\Api\V2\AuthController@queryAccountDetails');
     Route::post('checkUserNameExists', 'App\Http\Controllers\Api\V2\AuthController@checkUserNameExists');
     Route::post('checkPhoneNumberExists', 'App\Http\Controllers\Api\V2\AuthController@checkPhoneNumberExists');
@@ -284,6 +284,7 @@ Route::group(array('prefix' => '/v2'), function () {
     Route::post('/processUtilityPayment', 'App\Http\Controllers\Api\V2\PaymentController@processUtilityPayment');
     Route::post('/getTransactions', 'App\Http\Controllers\Api\V2\PaymentController@getTransactions');
     Route::post('/changePin', 'App\Http\Controllers\Api\V2\AuthController@changePin');
+    Route::post('/resetPin', 'App\Http\Controllers\Api\V2\AuthController@resetPin');
     Route::post('/checkStatus', 'App\Http\Controllers\Api\V2\PaymentController@checkStatus');
     Route::post('/validateMobileMoney', 'App\Http\Controllers\Api\V2\PaymentController@validateMobileMoney');
     Route::post('/validateBankAccount', 'App\Http\Controllers\Api\V2\PaymentController@validateBankAccount');

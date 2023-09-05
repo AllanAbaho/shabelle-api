@@ -58,7 +58,7 @@ class UserController extends Controller
 
         $authController = new AuthController();
 
-        $account = $authController->queryAccount($user->phone);
+        $account = $authController->queryAccountBalance($user->phone);
         if ($account['status'] !== 'SUCCESS') {
             return response([
                 'result' => false,
