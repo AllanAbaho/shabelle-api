@@ -121,7 +121,7 @@ class AuthController extends Controller
             $account_id = mt_rand(100000, 999999);
             $account = self::checkAccountNo($account_id);
             $user = new User([
-                'name' => $loginCitrus['fullName'] ?? 'Allan Abaho',
+                'name' => $loginCitrus['fullName'],
                 'account_balance' => 0,
                 'account_number' => $account['account_no'],
                 'phone' => $request->phone,
@@ -134,6 +134,7 @@ class AuthController extends Controller
             $user->createToken('tokens')->plainTextToken;
         } else {
             // update user
+            $user->name = $loginCitrus['fullName'];
             $user->password = bcrypt($request->pin);
             $user->save();
         }
@@ -368,7 +369,8 @@ class AuthController extends Controller
                     'status' => $result['status'],
                     'message' => $result['message'],
                     'username' => $result['username'],
-                    'marketPlaceAccount' => $result['marketPlaceAccount']
+                    'marketPlaceAccount' => $result['marketPlaceAccount'],
+                    'fullName' => $result['name']
                 ]);
             } else {
                 return (['status' => 'FAIL', 'message' => 'Invalid request, some parameters were not passed in the payload. Please update your app from google play store.']);
