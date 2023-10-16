@@ -109,6 +109,54 @@ class PaymentController extends Controller
         }
     }
 
+
+    public function sendSMS(Request $request)
+    {
+        try {
+            Log::info('Send SMS Request', [$request]);
+            $message = $request->get('message');
+            $phoneNumber = $request->get('phoneNumber');
+            if (isset($message) && isset($phoneNumber)) {
+                $url = 'http://10.101.1.20:9076/api/shabelle/paymentgateway/sendAppSms';
+                $post_data = [
+                    'message' => $message,
+                    'phoneNumber' => $phoneNumber,
+                ];
+                $ch = curl_init($url);
+
+                curl_setopt($ch, CURLOPT_POST, 1);
+                curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($post_data));
+                curl_setopt($ch, CURLOPT_TIMEOUT, 0);
+                curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type:application/json', 'Authorization: Basic ' . base64_encode(BASIC_AUTH_USERNAME_RETAIL . ':' . BASIC_AUTH_PASSWORD_RETAIL)));
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+                $result = curl_exec($ch);
+                if (curl_errno($ch)) {
+                    $error_msg = curl_error($ch);
+                    Log::info('Send SMS Curl Error', [$error_msg]);
+                    return response(['success' => false, 'message' => 'Failure at Pivot Payments, Please contact support.']);
+                }
+                curl_close($ch);
+                $result = (json_decode($result, true));
+                Log::info('Send SMS Response', [$result, $url]);
+                if ($result['status'] === 'SUCCESS') {
+                    return response(
+                        [
+                            'success' => true,
+                            'message' => 'SMS has been sent successfully.'
+                        ]
+                    );
+                } else {
+                    return response(['success' => false, 'message' => $result['message']]);
+                }
+            } else {
+                return response(['success' => false, 'message' => 'Invalid request, some parameters were not passed in the payload.']);
+            }
+        } catch (Exception $e) {
+            Log::info('Send SMS Exception Error', [$e->getMessage()]);
+            return response(['success' => false, 'message' => 'Failure to Send SMS, connection error please try again.']);
+        }
+    }
+
     public function authorizePayment(Request $request)
     {
         try {

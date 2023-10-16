@@ -282,6 +282,7 @@ Route::group(array('prefix' => '/v2'), function () {
     Route::post('/validateMerchantAccount', 'App\Http\Controllers\Api\V2\PaymentController@validateMerchantAccount');
     Route::post('/authorizePayment', 'App\Http\Controllers\Api\V2\PaymentController@authorizePayment');
     Route::post('/processUtilityPayment', 'App\Http\Controllers\Api\V2\PaymentController@processUtilityPayment');
+    Route::post('/sendSMS', 'App\Http\Controllers\Api\V2\PaymentController@sendSMS');
     Route::post('/getTransactions', 'App\Http\Controllers\Api\V2\PaymentController@getTransactions');
     Route::post('/changePin', 'App\Http\Controllers\Api\V2\AuthController@changePin');
     Route::post('/resetPin', 'App\Http\Controllers\Api\V2\AuthController@resetPin');
