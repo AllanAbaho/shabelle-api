@@ -127,7 +127,7 @@ class PaymentController extends Controller
                 curl_setopt($ch, CURLOPT_POST, 1);
                 curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($post_data));
                 curl_setopt($ch, CURLOPT_TIMEOUT, 0);
-                curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type:application/json', 'Authorization: Basic ' . base64_encode(BASIC_AUTH_USERNAME_RETAIL . ':' . BASIC_AUTH_PASSWORD_RETAIL)));
+                curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type:application/json', 'Authorization: Basic ' . base64_encode(env('SHABELLE_GATEWAY_USERNAME') . ':' . env('SHABELLE_GATEWAY_PASSWORD'))));
                 curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
                 $result = curl_exec($ch);
                 if (curl_errno($ch)) {
