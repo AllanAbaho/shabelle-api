@@ -133,7 +133,7 @@ class PaymentController extends Controller
                 if (curl_errno($ch)) {
                     $error_msg = curl_error($ch);
                     Log::info('Send SMS Curl Error', [$error_msg]);
-                    return response(['success' => false, 'message' => 'Failure at Pivot Payments, Please contact support.']);
+                    return response(['status' => false, 'message' => 'Failure at Pivot Payments, Please contact support.']);
                 }
                 curl_close($ch);
                 $result = (json_decode($result, true));
@@ -141,19 +141,19 @@ class PaymentController extends Controller
                 if ($result['status'] === 'SUCCESS') {
                     return response(
                         [
-                            'success' => true,
+                            'status' => true,
                             'message' => 'SMS has been sent successfully.'
                         ]
                     );
                 } else {
-                    return response(['success' => false, 'message' => $result['message']]);
+                    return response(['status' => false, 'message' => $result['message']]);
                 }
             } else {
-                return response(['success' => false, 'message' => 'Invalid request, some parameters were not passed in the payload.']);
+                return response(['status' => false, 'message' => 'Invalid request, some parameters were not passed in the payload.']);
             }
         } catch (Exception $e) {
             Log::info('Send SMS Exception Error', [$e->getMessage()]);
-            return response(['success' => false, 'message' => 'Failure to Send SMS, connection error please try again.']);
+            return response(['status' => false, 'message' => 'Failure to Send SMS, connection error please try again.']);
         }
     }
 
